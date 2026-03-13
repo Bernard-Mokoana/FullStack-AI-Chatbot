@@ -1,34 +1,46 @@
 import os
 from dotenv import load_dotenv
-import requests
-import json
+from urllib.parse import urlparse
+from huggingface_hub import InferenceClient
 
 load_dotenv()
 
 class GPT:
     def __init__(self):
-        self.url = os.environ.get('MODEL_URL')
         token = os.environ.get('HUGGINFACE_INFERENCE_TOKEN')
-        self.headers = {"Authorization": f"Bearer {token}"}
-        self.payload = {
-            "inputs": "",
-            "parameters": {
-                "return_full_text": False,
-                "use_cache": True,
-                "max_new_tokens": 25
-            }
+        if not token:
+            raise RuntimeError("Missing HUGGINFACE_INFERENCE_TOKEN in environment.")
+        self.client = InferenceClient(
+            provider="hf-inference",
+            api_key=token
+        )
+        self.model_id = self._resolve_model_id()
+        self.max_new_tokens = int(os.environ.get("MAX_NEW_TOKENS", "25"))
 
-        }
+    def _resolve_model_id(self) -> str:
+        model_id = os.environ.get("MODEL_ID")
+        if model_id:
+            return model_id
+        url = os.environ.get("MODEL_URL", "")
+        if url:
+            parsed = urlparse(url)
+            path = parsed.path.strip("/")
+            if "/models/" in path:
+                return path.split("/models/")[-1]
+            parts = path.split("/")
+            if len(parts) >= 2:
+                return "/".join(parts[-2:])
+        return "EleutherAI/gpt-j-6B"
 
     def query(self, input: str) -> list:
-        self.payload["inputs"] = input
-        data = json.dumps(self.payload)
-        response = requests.request(
-            "POST", self.url, headers=self.headers, data=data)
-        print(response.status_code)
-        print(response.text)
-        print(json.loads(response.content.decode("utf-8")))
-        return json.loads(response.content.decode("utf-8"))
+        response = self.client.chat.completions.create(
+            model=self.model_id,
+            messages=[{"role": "user", "content": input}],
+            max_tokens=self.max_new_tokens
+        )
+        text = response.choices[0].message.content
+        print(f"generated text: {text}")
+        return [{"generated_text": text}]
 
 if __name__ == "__main__":
-    GPT().query("Will artificial intelligence help humanity conquer the universe?")
+    GPT().query("Hello")
