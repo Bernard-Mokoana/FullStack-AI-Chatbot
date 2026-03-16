@@ -1,6 +1,6 @@
-# FullStack AI Chatbot
+﻿# FullStack AI Chatbot
 
-An in-progress full‑stack chatbot that uses a FastAPI WebSocket server, Redis Streams/JSON for message routing and session storage, and a Python worker that calls a Hugging Face inference endpoint.
+An in-progress full-stack chatbot that uses a FastAPI WebSocket server, Redis Streams/JSON for message routing and session storage, and a Python worker that calls a Hugging Face inference endpoint.
 
 **What exists today**
 - `server/`: FastAPI API + WebSocket gateway that accepts chat input, streams it to Redis, and relays model responses back to the client.
@@ -8,8 +8,27 @@ An in-progress full‑stack chatbot that uses a FastAPI WebSocket server, Redis 
 - `client/`: Present but currently empty (placeholder for a future UI).
 - `Application Architecture/Chatbot Architecture.drawio`: Architecture diagram source.
 
+## Tech Stack
+
+**Backend (API + WebSocket)**
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-3C3C3C?style=for-the-badge&logo=uvicorn&logoColor=white)
+
+**Worker / Model**
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Hugging%20Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+
+**Data / Messaging**
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Redis%20JSON](https://img.shields.io/badge/Redis%20JSON-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Redis%20Streams](https://img.shields.io/badge/Redis%20Streams-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+**Client (planned)**
+![TBD](https://img.shields.io/badge/TBD-555?style=for-the-badge)
+
 **Architecture (current flow)**
-1. Client calls `POST /token` with a user name to create a chat session (stored in Redis JSON with a 1‑hour TTL).
+1. Client calls `POST /token` with a user name to create a chat session (stored in Redis JSON with a 1-hour TTL).
 2. Client opens WebSocket `GET /chat?token=...`.
 3. Server sends each incoming message to Redis Stream `message_channel`.
 4. Worker consumes from `message_channel`, appends to Redis JSON history, calls the model, and writes a response to `response_channel`.
@@ -98,4 +117,3 @@ python main.py
 - Tokens expire after 1 hour (set by the server when creating a session).
 - The worker prepends `Human:` / `Bot:` labels when adding messages to the JSON cache.
 - `client/` is currently empty and ready for UI work.
-
