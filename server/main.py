@@ -6,8 +6,6 @@ from src.routes.chat import chat
 
 load_dotenv()
 
-
-
 api = FastAPI()
 api.include_router(chat)
 

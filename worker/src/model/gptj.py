@@ -30,7 +30,7 @@ class GPT:
             parts = path.split("/")
             if len(parts) >= 2:
                 return "/".join(parts[-2:])
-        return "EleutherAI/gpt-j-6B"
+        return "katanemo/Arch-Router-1.5B"
 
     def query(self, input: str) -> list:
         response = self.client.chat.completions.create(
@@ -39,8 +39,8 @@ class GPT:
             max_tokens=self.max_new_tokens
         )
         text = response.choices[0].message.content
-        print(f"generated text: {text}")
-        return [{"generated_text": text}]
+        res = str(text.split("Human:")[0]).strip("\n").strip()
+        return res
 
 if __name__ == "__main__":
     GPT().query("Hello")

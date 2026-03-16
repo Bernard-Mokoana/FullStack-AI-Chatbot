@@ -1,15 +1,16 @@
 from fastapi import WebSocket, status, Query
 from typing import Optional
-from ..redis.config import Redis as redis
+from ..redis.config import Redis
 
-async def get_token(self, websocket: WebSocket, token: Optional[str] = Query(None),):
+async def get_token(websocket: WebSocket, token: Optional[str] = Query(None)):
     if token is None or token == "":
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
 
-    redis_client = await redis.create_connection(self)
+    redis_client = await Redis().create_connection()
     isexists = await redis_client.exists(token)
 
     if isexists == 1:
         return token
-    else:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+
+    await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
