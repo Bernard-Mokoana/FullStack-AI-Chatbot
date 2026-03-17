@@ -5,7 +5,7 @@ An in-progress full-stack chatbot that uses a FastAPI WebSocket server, Redis St
 **What exists today**
 - `server/`: FastAPI API + WebSocket gateway that accepts chat input, streams it to Redis, and relays model responses back to the client.
 - `worker/`: Background consumer that reads from Redis Streams, calls the LLM, updates Redis JSON chat history, and publishes responses.
-- `client/`: Present but currently empty (placeholder for a future UI).
+- `client/`: Next.js App Router UI with a name-gated chat screen that opens a tokenized WebSocket session.
 - `Application Architecture/Chatbot Architecture.drawio`: Architecture diagram source.
 
 ## Tech Stack
@@ -24,11 +24,13 @@ An in-progress full-stack chatbot that uses a FastAPI WebSocket server, Redis St
 ![Redis%20JSON](https://img.shields.io/badge/Redis%20JSON-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![Redis%20Streams](https://img.shields.io/badge/Redis%20Streams-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 
-**Client (planned)**
-![TBD](https://img.shields.io/badge/TBD-555?style=for-the-badge)
+**Client (Next.js)**
+![Next.js](https://img.shields.io/badge/Next.js-111?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Zustand](https://img.shields.io/badge/Zustand-433?style=for-the-badge)
 
 **Architecture (current flow)**
-1. Client calls `POST /token` with a user name to create a chat session (stored in Redis JSON with a 1-hour TTL).
+1. Client collects a user name and calls `POST /token` to create a chat session (stored in Redis JSON with a 1-hour TTL).
 2. Client opens WebSocket `GET /chat?token=...`.
 3. Server sends each incoming message to Redis Stream `message_channel`.
 4. Worker consumes from `message_channel`, appends to Redis JSON history, calls the model, and writes a response to `response_channel`.
@@ -53,6 +55,7 @@ An in-progress full-stack chatbot that uses a FastAPI WebSocket server, Redis St
 ## Configuration
 
 There are separate `.env` files for `server/` and `worker/`. Do not commit real secrets.
+The client uses `.env.local` inside `client/`.
 
 **Shared Redis config**
 - `REDIS_URL`
@@ -69,6 +72,10 @@ There are separate `.env` files for `server/` and `worker/`. Do not commit real 
 - `MODEL_ID` (defaults to `katanemo/Arch-Router-1.5B` if not set)
 - `MAX_NEW_TOKENS` (defaults to `25` if not set)
 
+**Client only**
+- `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:3500`)
+- `NEXT_PUBLIC_WS_URL` (defaults to `ws://localhost:3500/chat`)
+
 ### Example `.env` (safe placeholders)
 ```env
 APP_ENV=development
@@ -81,6 +88,12 @@ REDIS_PORT=6379
 HUGGINFACE_INFERENCE_TOKEN=hf_xxx
 MODEL_ID=katanemo/Arch-Router-1.5B
 MAX_NEW_TOKENS=150
+```
+
+### Example `client/.env.local`
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3500
+NEXT_PUBLIC_WS_URL=ws://localhost:3500/chat
 ```
 
 ## Local setup
@@ -112,8 +125,15 @@ cd worker
 python main.py
 ```
 
+**Client**
+```powershell
+cd client
+npm install
+npm run dev
+```
+
 ## Notes / gotchas
 - Redis JSON features are required for chat history storage (Redis Stack or RedisJSON module).
 - Tokens expire after 1 hour (set by the server when creating a session).
 - The worker prepends `Human:` / `Bot:` labels when adding messages to the JSON cache.
-- `client/` is currently empty and ready for UI work.
+- WebSocket messages are raw text (not JSON). The client parses the worker’s Python-dict-style string payloads.
