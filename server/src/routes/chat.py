@@ -1,3 +1,5 @@
+import asyncio
+import contextlib
 import os
 from fastapi import APIRouter, WebSocket, Request, HTTPException, Depends, WebSocketDisconnect
 import uuid
@@ -27,8 +29,6 @@ async def token_generator(name: str, request: Request):
     await redis_client.json().set(str(token), "$", chat_session.dict())
     await redis_client.expire(str(token), 3600)
 
-    print(chat_session.model_dump())
-
     return chat_session.model_dump()
 
 
@@ -53,32 +53,50 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
     consumer = StreamConsumer(redis_client)
     token = str(token)
 
-    try:
+    last_id = "$"
+    
+    async def response_listener():
+        nonlocal last_id
         while True:
-            data = await websocket.receive_text()
-            stream_data = {}
-            stream_data[token] = data
-            await producer.add_to_stream(stream_data, "message_channel")
-            response = await consumer.consume_stream(stream_channel="response_channel", block=0, count=1)
-            print(response)
+            response = await consumer.consume_stream(
+                stream_channel="response_channel",
+                block=10000,
+                count=1,
+                last_id=last_id
+            )
+
+            if not response:
+                continue
 
             for stream, messages in response:
                 for message in messages:
+                    message_id = message[0].decode("utf-8") if isinstance(message[0], (bytes, bytearray)) else message[0]
                     token_key = next(iter(message[1].keys()), None)
                     message_value = next(iter(message[1].values()), None)
 
                     response_token = token_key.decode("utf-8") if isinstance(token_key, (bytes, bytearray)) else token_key
 
+       
+                    last_id = message_id
+
                     if token == response_token:
                         response_message = message_value.decode("utf-8") if isinstance(message_value, (bytes, bytearray)) else message_value
-                        
-                        print(message[0].decode('utf-8'))
-                        print(token)
-                        print(response_token)
-
                         await manager.send_personal_message(response_message, websocket)
+                        await consumer.delete_message(stream_channel="response_channel", message_id=message_id)
+                   
 
-                    await consumer.delete_message(stream_channel="response_channel", message_id=message[0].decode('utf-8'))
+    listener_task = asyncio.create_task(response_listener())
+
+
+    try:
+        while True:
+            data = await websocket.receive_text()
+            stream_data = {token: data}
+            await producer.add_to_stream(stream_data, "message_channel")
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+    finally:
+        listener_task.cancel()
+        with contextlib.suppress(asyncio.CancelError):
+            await listener_task

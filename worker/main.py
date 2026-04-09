@@ -1,4 +1,5 @@
 from src.redis.config import Redis
+import json
 import asyncio
 from src.model.gptj import GPT
 from src.redis.cache import Cache
@@ -47,7 +48,7 @@ async def main():
                     )
 
                     stream_data = {}
-                    stream_data[str(token)] = str(msg.model_dump())
+                    stream_data[str(token)] = msg.model_dump_json()
 
                     await producer.add_to_stream(stream_data, "response_channel")
 

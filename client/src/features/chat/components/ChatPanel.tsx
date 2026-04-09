@@ -1,0 +1,188 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { createChatSession, refreshChatSession } from "@/services/chat/chatApi";
+import { createChatSocket } from "@/services/ws/chatSocket";
+import {
+  getChatToken,
+  setChatToken,
+  clearChatToken,
+  getChatMessages,
+  setChatMessages,
+  clearChatMessages,
+} from "@/services/storage/chatStorage";
+import ChatInterface from "@/features/chat/components/ChatInterface";
+import type { ChatMessage, ChatPanelProps } from "@/features/chat/types/chat";
+
+export default function ChatPanel({ displayName }: ChatPanelProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [input, setInput] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const socketRef = useRef<WebSocket | null>(null);
+  const [recentChats, setRecentChats] = useState<string[]>([]);
+  const [connectionState, setConnectionState] = useState<
+    "connecting" | "connected" | "disconnected" | "error"
+  >("connecting");
+  const [isAssistantTyping, setIsAssistantTyping] = useState(false);
+
+  useEffect(() => {
+    setChatMessages(messages);
+  }, [messages]);
+
+  useEffect(() => {
+    const stored = getChatMessages<ChatMessage[]>();
+    if (stored?.length) {
+      setMessages(stored);
+    }
+  }, []);
+
+  const parseHistoryMessage = (raw: string) => {
+    const trimmed = raw.trim();
+    if (trimmed.toLowerCase().startsWith("human:")) {
+      return { role: "user" as const, content: trimmed.replace(/^human:\s*/i, "") };
+    }
+    if (trimmed.toLowerCase().startsWith("bot:")) {
+      return { role: "assistant" as const, content: trimmed.replace(/^bot:\s*/i, "") };
+    }
+    return { role: "assistant" as const, content: trimmed };
+  };
+
+  useEffect(() => {
+    let alive = true;
+
+    async function initSession() {
+      setConnectionState("connecting");
+      try {
+        const existingToken = getChatToken();
+
+        if (existingToken) {
+          const history = await refreshChatSession(existingToken);
+          if (!alive) return;
+
+          socketRef.current = createChatSocket(existingToken, (message: string) => {
+            setIsAssistantTyping(false);
+            setMessages((prev) => [
+              ...prev,
+              { id: crypto.randomUUID(), role: "assistant", content: message },
+            ]);
+          });
+          socketRef.current.onopen = () => setConnectionState("connected");
+          socketRef.current.onclose = () => {
+            setConnectionState("disconnected");
+            setIsAssistantTyping(false);
+          };
+          socketRef.current.onerror = () => {
+            setConnectionState("error");
+            setIsAssistantTyping(false);
+          };
+
+          if (history?.messages?.length) {
+            const mapped = history.messages.map((m: any) => {
+              const parsed = parseHistoryMessage(m.msg ?? "");
+              return {
+                id: m.id ?? crypto.randomUUID(),
+                role: parsed.role,
+                content: parsed.content,
+              };
+            });
+
+            setMessages((prev) => (prev.length ? prev : mapped));
+
+            const recent = mapped
+              .filter((m: ChatMessage) => m.role === "user")
+              .map((m: ChatMessage) => m.content)
+              .slice(-8);
+
+            setRecentChats(recent);
+          }
+
+          return;
+        }
+
+        const session = await createChatSession(displayName);
+        if (!alive) return;
+
+        setChatToken(session.token);
+
+        socketRef.current = createChatSocket(session.token, (message) => {
+          setIsAssistantTyping(false);
+          setMessages((prev) => [
+            ...prev,
+            { id: crypto.randomUUID(), role: "assistant", content: message },
+          ]);
+        });
+        socketRef.current.onopen = () => setConnectionState("connected");
+        socketRef.current.onclose = () => {
+          setConnectionState("disconnected");
+          setIsAssistantTyping(false);
+        };
+        socketRef.current.onerror = () => {
+          setConnectionState("error");
+          setIsAssistantTyping(false);
+        };
+      } catch (error) {
+        clearChatToken();
+        clearChatMessages();
+        console.error("Failed to init chat session", error);
+        setConnectionState("error");
+      }
+    }
+
+    initSession();
+
+    return () => {
+      alive = false;
+      socketRef.current?.close();
+    };
+  }, [displayName]);
+
+  const updateRecentChats = (text: string) => {
+    setRecentChats((prev) => {
+      const next = [text, ...prev.filter((item) => item !== text)];
+      return next.slice(0, 8);
+    });
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(trimmed);
+    }
+    setMessages((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), role: "user", content: trimmed },
+    ]);
+
+    setIsAssistantTyping(true);
+    updateRecentChats(trimmed);
+
+    setInput("");
+
+    if (pathname !== "/chat") {
+      router.push("/chat");
+    }
+  };
+
+  return (
+    <ChatInterface
+      displayName={displayName}
+      isSidebarOpen={isSidebarOpen}
+      onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+      recentChats={recentChats}
+      connectionState={connectionState}
+      messages={messages}
+      input={input}
+      onInputChange={setInput}
+      onSubmit={handleSubmit}
+      isAssistantTyping={isAssistantTyping}
+    />
+  );
+}
