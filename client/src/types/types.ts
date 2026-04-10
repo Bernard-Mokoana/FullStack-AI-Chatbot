@@ -2,6 +2,9 @@ import type { FormEvent } from "react";
 
 type ConnectionState = "connecting" | "connected" | "disconnected" | "error";
 
+export type MessageHandler = (message: string) => void;
+export type ErrorHandler = (event: Event) => void;
+
 export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
@@ -10,9 +13,6 @@ export type ChatMessage = {
 
 export type ChatInterfaceProps = {
   displayName: string;
-  isSidebarOpen: boolean;
-  onToggleSidebar: () => void;
-  recentChats: string[];
   connectionState: ConnectionState;
   messages: ChatMessage[];
   input: string;

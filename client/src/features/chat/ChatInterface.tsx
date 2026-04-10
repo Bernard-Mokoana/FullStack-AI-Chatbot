@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Send } from "lucide-react";
-import type { ChatInterfaceProps } from "@/features/chat/types/chat";
+import type { ChatInterfaceProps } from "@/types/types";
+import { clearChatToken, clearChatName, clearChatMessages } from "@/services/storage/chatStorage";
 
 const connectionTone = {
   connected: {
@@ -47,6 +48,13 @@ export default function ChatInterface({
 
   const status = useMemo(() => connectionTone[connectionState], [connectionState]);
 
+  const handleBack = (() => {
+    clearChatName();
+    clearChatToken();
+    clearChatMessages();
+    router.push("/")
+  })
+
   return (
     <div className="min-h-screen w-full bg-slate-50">
       <div className="flex min-h-screen flex-col">
@@ -55,23 +63,27 @@ export default function ChatInterface({
             <div className="flex items-center gap-3 sm:gap-4">
           <button
             type="button"
-            onClick={() => router.push("/")}
+            onClick={handleBack}
             className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
             aria-label="Back to home"
           >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
+      
           <div>
             <h2 className="font-semibold text-slate-900">AI Assistant</h2>
             <p className="text-sm text-slate-500">Chatting with {displayName}</p>
           </div>
         </div>
+
+        {/* <button type="button" className="h-2 w-2 rounded-full">logout</button> */}
         <div
           className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${status.badge}`}
         >
           <span className={`h-2 w-2 rounded-full ${status.dot}`} />
           {status.label}
         </div>
+        
           </div>
         </header>
 
@@ -100,6 +112,7 @@ export default function ChatInterface({
                   </motion.div>
                 ))}
               </AnimatePresence>
+
 
               {connectionState === "connecting" && (
                 <motion.div
