@@ -1,5 +1,4 @@
-type MessageHandler = (message: string) => void;
-type ErrorHandler = (event: Event) => void;
+import type { MessageHandler, ErrorHandler } from "@/types/types";
 
 const rawWsBaseUrl = process.env.NEXT_PUBLIC_WS_URL;
 
@@ -21,8 +20,8 @@ export function createChatSocket(
       const parsed = JSON.parse(event.data);
       onMessage(parsed?.msg ?? "");
     } catch (error) {
-       onMessage(event.data);
-       console.error(error)
+      onMessage(event.data);
+      console.error(error);
     }
   };
 

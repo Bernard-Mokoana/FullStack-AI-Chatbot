@@ -98,5 +98,5 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Depends(get_toke
         manager.disconnect(websocket)
     finally:
         listener_task.cancel()
-        with contextlib.suppress(asyncio.CancelError):
+        with contextlib.suppress(asyncio.CancelledError):
             await listener_task

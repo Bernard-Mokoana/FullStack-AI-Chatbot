@@ -1,34 +1,8 @@
-// import { auth0 } from "@/lib/auth0";
-// import { redirect } from "next/navigation";
-// import ChatPanel from "@/components/ChatPanel";
-
-// export default async function ChatPage() {
-//   const session = await auth0.getSession();
-//   const user = session?.user;
-
-//   if (!user) {
-//     redirect("/");
-//   }
-
-//   if (user.email_verified === false) {
-//     redirect("/verify");
-//   }
-
-//   const displayName =
-//     user.name ?? user.email ?? user.nickname ?? "there";
-
-//   return (
-//     <main style={{ minHeight: "100vh" }}>
-//       <ChatPanel displayName={displayName} />
-//     </main>
-//   );
-// }
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import ChatPanel from "@/features/chat/components/ChatPanel";
+import ChatPanel from "@/features/chat/ChatPanel";
 import { getChatName } from "@/services/storage/chatStorage";
 
 export default function ChatPage() {
@@ -39,18 +13,20 @@ export default function ChatPage() {
     const name = getChatName();
     if (!name) {
       router.push("/");
-      return;
+    } else {
+      setDisplayName(name);
     }
-    setDisplayName(name);
   }, [router]);
 
   if (!displayName) {
-    return null;
+    return null; // both server and client agree on this initial render
   }
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      <ChatPanel displayName={displayName} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <ChatPanel displayName={displayName} />
+      </Suspense>
     </main>
   );
 }

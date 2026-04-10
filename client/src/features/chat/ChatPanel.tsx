@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { createChatSession, refreshChatSession } from "@/services/chat/chatApi";
 import { createChatSocket } from "@/services/ws/chatSocket";
 import {
@@ -12,32 +11,25 @@ import {
   setChatMessages,
   clearChatMessages,
 } from "@/services/storage/chatStorage";
-import ChatInterface from "@/features/chat/components/ChatInterface";
-import type { ChatMessage, ChatPanelProps } from "@/features/chat/types/chat";
+import ChatInterface from "@/features/chat/ChatInterface";
+import type { ChatMessage, ChatPanelProps } from "@/types/types";
 
 export default function ChatPanel({ displayName }: ChatPanelProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [input, setInput] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
-  const [recentChats, setRecentChats] = useState<string[]>([]);
   const [connectionState, setConnectionState] = useState<
     "connecting" | "connected" | "disconnected" | "error"
   >("connecting");
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
 
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+  const stored = getChatMessages<ChatMessage[]>();
+  return stored ?? [];
+});
+
   useEffect(() => {
     setChatMessages(messages);
   }, [messages]);
-
-  useEffect(() => {
-    const stored = getChatMessages<ChatMessage[]>();
-    if (stored?.length) {
-      setMessages(stored);
-    }
-  }, []);
 
   const parseHistoryMessage = (raw: string) => {
     const trimmed = raw.trim();
@@ -91,12 +83,6 @@ export default function ChatPanel({ displayName }: ChatPanelProps) {
 
             setMessages((prev) => (prev.length ? prev : mapped));
 
-            const recent = mapped
-              .filter((m: ChatMessage) => m.role === "user")
-              .map((m: ChatMessage) => m.content)
-              .slice(-8);
-
-            setRecentChats(recent);
           }
 
           return;
@@ -139,13 +125,6 @@ export default function ChatPanel({ displayName }: ChatPanelProps) {
     };
   }, [displayName]);
 
-  const updateRecentChats = (text: string) => {
-    setRecentChats((prev) => {
-      const next = [text, ...prev.filter((item) => item !== text)];
-      return next.slice(0, 8);
-    });
-  };
-
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = input.trim();
@@ -162,21 +141,13 @@ export default function ChatPanel({ displayName }: ChatPanelProps) {
     ]);
 
     setIsAssistantTyping(true);
-    updateRecentChats(trimmed);
 
     setInput("");
-
-    if (pathname !== "/chat") {
-      router.push("/chat");
-    }
   };
 
   return (
     <ChatInterface
       displayName={displayName}
-      isSidebarOpen={isSidebarOpen}
-      onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
-      recentChats={recentChats}
       connectionState={connectionState}
       messages={messages}
       input={input}
