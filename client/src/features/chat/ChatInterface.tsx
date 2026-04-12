@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeft, Send } from "lucide-react";
 import type { ChatInterfaceProps } from "@/types/types";
 import { clearChatToken, clearChatName, clearChatMessages } from "@/services/storage/chatStorage";
+
 
 const connectionTone = {
   connected: {
@@ -41,6 +42,7 @@ export default function ChatInterface({
 }: ChatInterfaceProps) {
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -49,11 +51,19 @@ export default function ChatInterface({
   const status = useMemo(() => connectionTone[connectionState], [connectionState]);
 
   const handleBack = (() => {
-    clearChatName();
+    setIsLogoutModalOpen(true);
+  })
+
+  const confirmLogout = (() => {
+     clearChatName();
     clearChatToken();
     clearChatMessages();
     router.push("/")
   })
+
+  const cancelLogout = () => {
+    setIsLogoutModalOpen(false);
+  }
 
   return (
     <div className="min-h-screen w-full bg-slate-50">
@@ -69,14 +79,38 @@ export default function ChatInterface({
           >
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
-      
+
+             {/* Logout Modal */}
+              {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/25 px-4">
+          <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="px-6 pt-6 pb-5 text-center">
+              <h3 className="text-2xl font-bold text-gray-700">Logout</h3>
+              <p className="mt-3 text-lg text-gray-700">Are you sure you want to logout?</p>
+            </div>
+            <div className="flex border-t border-gray-200">
+              <button
+                onClick={cancelLogout}
+                className="w-1/2 border-r border-gray-200 py-3 text-xl font-medium text-gray-500 transition-colors hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="w-1/2 py-3 text-xl font-semibold text-indigo-500 transition-colors hover:bg-gray-50"
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
           <div>
             <h2 className="font-semibold text-slate-900">AI Assistant</h2>
             <p className="text-sm text-slate-500">Chatting with {displayName}</p>
           </div>
         </div>
-
-        {/* <button type="button" className="h-2 w-2 rounded-full">logout</button> */}
         <div
           className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${status.badge}`}
         >
