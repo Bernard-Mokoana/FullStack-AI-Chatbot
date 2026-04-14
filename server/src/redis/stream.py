@@ -4,7 +4,7 @@ class StreamConsumer:
     def __init__(self, redis_client):
         self.redis_client = redis_client
 
-    async def consume_stream(self, count: int, block: int, stream_channel, last_id: str):
+    async def consume_stream(self, count: int, block: int, stream_channel, last_id: str = "$"):
         response = await self.redis_client.xread(
             streams={stream_channel: last_id}, count=count, block=block
         )
