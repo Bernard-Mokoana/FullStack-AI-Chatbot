@@ -46,26 +46,26 @@ The project is currently built around a token-based chat session flow:
 
 ### Frontend
 
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Axios
-- Motion
+![Next.js](https://img.shields.io/badge/Next.js-111111?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+![Motion](https://img.shields.io/badge/Motion-000000?style=for-the-badge&logo=framer&logoColor=white)
 
 ### Backend
 
-- Python
-- FastAPI
-- Uvicorn
-- Redis
-- Redis JSON / Redis Stack features
-- WebSockets
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Uvicorn](https://img.shields.io/badge/Uvicorn-4051B5?style=for-the-badge&logo=uvicorn&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![Redis JSON](https://img.shields.io/badge/Redis_JSON-B91C1C?style=for-the-badge&logo=redis&logoColor=white)
+![WebSockets](https://img.shields.io/badge/WebSockets-0F172A?style=for-the-badge&logo=socketdotio&logoColor=white)
 
 ### Model Worker
 
-- `huggingface_hub` `InferenceClient`
-- Redis Streams
+![Hugging Face](https://img.shields.io/badge/Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
+![Redis Streams](https://img.shields.io/badge/Redis_Streams-DC2626?style=for-the-badge&logo=redis&logoColor=white)
 
 ## How The Client Behaves
 
