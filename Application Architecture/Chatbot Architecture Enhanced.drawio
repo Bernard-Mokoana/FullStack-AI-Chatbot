@@ -111,11 +111,11 @@
           </mxGeometry>
         </mxCell>
 
-        <!-- ============ LAYER 2: BACKEND & PROCESSING ============ -->
+        <!-- ============ LAYER 2: BACKEND AND PROCESSING ============ -->
         <mxCell id="layer-be-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F0E8F8;strokeColor=#9C27B0;strokeWidth=2;dashed=0;" parent="1" vertex="1">
           <mxGeometry x="30" y="420" width="1340" height="380" as="geometry" />
         </mxCell>
-        <mxCell id="layer-be-label" value="API & PROCESSING LAYER (Backend)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#9C27B0;" parent="1" vertex="1">
+        <mxCell id="layer-be-label" value="API and PROCESSING LAYER (Backend)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#9C27B0;" parent="1" vertex="1">
           <mxGeometry x="50" y="435" width="280" height="20" as="geometry" />
         </mxCell>
 
@@ -198,7 +198,7 @@
             <mxPoint x="780" y="530" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="con-be-3-label" value="Dequeue & Process" style="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#9C27B0;" parent="con-be-3" vertex="1">
+        <mxCell id="con-be-3-label" value="Dequeue and Process" style="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;fontSize=9;fontColor=#9C27B0;" parent="con-be-3" vertex="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
@@ -216,11 +216,11 @@
           </mxGeometry>
         </mxCell>
 
-        <!-- ============ LAYER 3: DATA & PERSISTENCE ============ -->
+        <!-- ============ LAYER 3: DATA and PERSISTENCE ============ -->
         <mxCell id="layer-data-bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F0E8;strokeColor=#FF9800;strokeWidth=2;dashed=0;" parent="1" vertex="1">
           <mxGeometry x="30" y="850" width="1340" height="150" as="geometry" />
         </mxCell>
-        <mxCell id="layer-data-label" value="DATA LAYER (Persistence & Infrastructure)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#FF9800;" parent="1" vertex="1">
+        <mxCell id="layer-data-label" value="DATA LAYER (Persistence and Infrastructure)" style="text;html=1;align=left;verticalAlign=top;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;fontStyle=1;fontColor=#FF9800;" parent="1" vertex="1">
           <mxGeometry x="50" y="865" width="350" height="20" as="geometry" />
         </mxCell>
 
@@ -362,7 +362,7 @@
         </mxCell>
 
         <!-- Auth Flow -->
-        <mxCell id="con-layer-4" value="" style="endArrow=classic;html=1;rounded=1;strokeColor:#666;strokeWidth=2;exitX=0.7;exitY=1;entryX=0.7;entryY=0;" parent="1" edge="1">
+        <mxCell id="con-layer-4" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#666;strokeWidth=2;exitX=0.7;exitY=1;entryX=0.7;entryY=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="490" y="355" as="sourcePoint" />
             <mxPoint x="410" y="1110" as="targetPoint" />
@@ -379,7 +379,7 @@
         </mxCell>
 
         <!-- Monitoring Connection -->
-        <mxCell id="con-layer-5" value="" style="endArrow=classic;html=1;rounded=1;strokeColor:#666;strokeWidth=2;strokeDasharray=5,5;exitX=0.5;exitY=1;entryX=0.4;entryY=0;" parent="1" edge="1">
+        <mxCell id="con-layer-5" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#666;strokeWidth=2;strokeDasharray=5,5;exitX=0.5;exitY=1;entryX=0.4;entryY=0;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="150" y="580" as="sourcePoint" />
             <mxPoint x="590" y="910" as="targetPoint" />
